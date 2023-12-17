@@ -1,0 +1,12 @@
+{
+  "domain": "netsprinkler_component",
+  "name": "NETSprinkler Component",
+  "codeowners": [
+    "@enicky"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/enicky/netsprinkler_component",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/enicky/netsprinkler_component/issues",
+  "version": "0.0.0"
+}

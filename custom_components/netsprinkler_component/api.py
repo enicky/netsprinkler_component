@@ -29,8 +29,7 @@ class IntegrationBlueprintApiClient:
 
     def __init__(
         self,
-        username: str,
-        password: str,
+        url: str,
         session: aiohttp.ClientSession,
     ) -> None:
         """Sample API Client."""
