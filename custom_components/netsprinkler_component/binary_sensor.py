@@ -23,6 +23,7 @@ async def async_setup_entry(hass : HomeAssistant, entry: dict, async_add_devices
     LOGGER.debug(f'{logPrefix} Start setup of binary sensors')
     entities = _create_entities(hass, entry)
     async_add_devices(entities)
+    LOGGER.debug(f'{logPrefix} Finished async_setup_entry... return ')
 
 
 def _create_entities(hass: HomeAssistant, entry: dict):
@@ -46,7 +47,7 @@ class StationIsRunningBinarySensor(NETSprinklerStationEntity, NETSprinklerBinary
     @property
     def name(self) -> str:
         """Return the name of this sensor."""
-        return self._valve.name + " Station Running"
+        return self._valve.name + " Valve Running"
 
     @property
     def unique_id(self) -> str:

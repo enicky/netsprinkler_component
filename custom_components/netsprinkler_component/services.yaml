@@ -1,0 +1,13 @@
+run:
+  fields:
+    entity_id:
+      example: "sensor.station_name"
+    run_seconds:
+      example: 60
+    continue_running_stations:
+      example: False
+
+stop:
+  fields:
+    entity_id:
+      example: "sensor.station_name"

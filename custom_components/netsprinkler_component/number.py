@@ -5,7 +5,8 @@ from homeassistant.const import CONF_NAME
 from typing import Callable
 
 from .const import (
-    DOMAIN
+    DOMAIN,
+    LOGGER
 )
 
 async def async_setup_entry(
@@ -14,8 +15,10 @@ async def async_setup_entry(
     async_add_entities: Callable,
 ):
     """Set up the OpenSprinkler numbers."""
+    logPrefix = '[Number:async_setup_entry]'
     entities = _create_entities(hass, entry)
     async_add_entities(entities)
+    LOGGER.debug(f'{logPrefix} Finished async_setup_entry... return ')
 
 def _create_entities(hass: HomeAssistant, entry: dict):
     entities = []

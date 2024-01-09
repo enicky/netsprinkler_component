@@ -18,8 +18,10 @@ from .const import (
 
 async def async_setup_entry(hass: HomeAssistant, entry: dict, async_add_entities: Callable):
     """Set up the sensor platform."""
+    logPrefix = '[switch:async_setup_entry]'
     entities = _create_entities(hass, entry)
     async_add_entities(entities)
+    LOGGER.debug(f'{logPrefix} Finished async_setup_entry... return ')
 
 def _create_entities(hass: HomeAssistant, entry: dict):
     entities = []

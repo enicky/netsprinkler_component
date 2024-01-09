@@ -7,10 +7,13 @@ from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform, CONF_URL, CONF_SCAN_INTERVAL
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.helpers.entity_platform import async_get_platforms
+import voluptuous as vol
+from homeassistant.helpers import config_validation as cv
 
 from homeassistant.util.dt import utc_from_timestamp
 from homeassistant.util import slugify
@@ -20,7 +23,9 @@ from custom_components.netsprinkler_component.Sprinkler.netsprinkler import NETS
 from .const import (
     DOMAIN,
     DEFAULT_SCAN_INTERVAL,
-    LOGGER
+    LOGGER,
+    SERVICE_RUN,
+    SCHEMA_SERVICE_RUN
 )
 from .coordinator import NETSprinklerDataUpdateCoordinator
 
@@ -55,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
     LOGGER.debug(f'{logPrefix} Start refreshing data from coordinator side')
     await coordinator.async_refresh()
+    LOGGER.debug(f'{logPrefix} Finished refreshing data from coordinator side')
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
     LOGGER.debug(f'{logPrefix} Finished and last update was a success')
@@ -63,12 +69,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             "controller": controller,
         }
 
+    LOGGER.debug(f'{logPrefix} Going through PLATFORMS to process components')
     for components in PLATFORMS:
-        LOGGER.debug(f'{logPrefix} Start processing component {components}')
+        #LOGGER.debug(f'{logPrefix} Start processing component {components}')
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, components)
         )
+    LOGGER.debug(f'{logPrefix} Finished processing PLATFORMS. Start return true')
 
+    #setup services
+    async def _async_send_run_command(call: ServiceCall):
+        await hass.helpers.service.entity_service_call(
+            async_get_platforms(hass, DOMAIN), SERVICE_RUN, call
+        )
+
+    hass.services.async_register(
+        domain=DOMAIN,
+        service=SERVICE_RUN,
+        schema=cv.make_entity_service_schema(SCHEMA_SERVICE_RUN),
+        service_func=_async_send_run_command,
+    )
     return True
 
 
@@ -146,13 +166,10 @@ class NETSprinklerBinarySensor(NETSprinklerEntity):
         """Return true if the binary sensor is on."""
         return self._get_state()
 
-
-
 class NETSprinklerSensor(NETSprinklerEntity):
     @property
     def state(self):
         return self._get_state()
-
 
 class NETSprinklerControllerEntity:
     async def run(self, run_seconds = None, continue_running_stations = None):
@@ -169,7 +186,6 @@ class NETSprinklerControllerEntity:
         """Reboot controller."""
         #await self._controller.reboot()
         await self._coordinator.async_request_refresh()
-
 
 class NETSprinklerStationEntity:
     @property

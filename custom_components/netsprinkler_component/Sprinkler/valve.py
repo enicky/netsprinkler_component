@@ -16,6 +16,7 @@ class Valve(object):
 
     @property
     def is_running(self):
+        return self._controller.state['valves'][self._index]['status']['isOpen']
         return False
 
 
@@ -51,3 +52,15 @@ class Valve(object):
         id = self._controller.state['valves'][self._index]['id']
         LOGGER.debug(f'[Valve:enable] enabling valve {id}')
         await self._controller.enable_valve(id)
+
+    async def _manual_run(self, seconds):
+        logPrefix = '[valve:_manual_run]'
+        ## send request to run valve on id ...
+        id= self._controller.state['valves'][self._index]['id']
+        LOGGER.debug(f'{logPrefix} Start manual run on valvie id {id}')
+        await self._controller.start_manual(id)
+
+    async def run(self, seconds = None):
+        if seconds is None:
+            seconds = 60
+        return await self._manual_run(seconds)

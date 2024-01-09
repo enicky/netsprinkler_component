@@ -94,6 +94,35 @@ class NETSprinkler():
         }
         return await self.callEnableValveWithData(data)
 
+    async def start_manual(self, id, seconds = 60):
+        logPrefix = '[NETSPrinkler:start_manual]'
+        LOGGER.debug(f'{logPrefix} Start Manual Run')
+        data = {
+            'valveId' : id,
+            'seconds': seconds
+        }
+        if self._http_client is None:
+            self.session_start()
+        timeout = aiohttp.ClientTimeout(total=60)
+        headers = {"Accept": "*/*", "Connection": "keep-alive", "Content-Type":"application/json"}
+        url = f'{self.url}/api/Valve/Run'
+        LOGGER.debug(f'{logPrefix} Start making call to "{url}"')
+
+        try:
+            async with self._http_client.post(
+                    url, timeout=timeout, headers=headers,json=data
+                ) as resp:
+                    LOGGER.debug(f'{logPrefix} call finished and returned data {resp}')
+                    content = await resp.json(
+                        encoding="UTF-8", content_type="application/json"
+                    )
+                    LOGGER.info(f'{logPrefix} result : {content}')
+                    return content
+        except aiohttp.ClientConnectionError as exc:
+            raise ValueError("Cannot connect to controller") from exc
+        except ConnectionError as exc:
+            raise ValueError("Cannot connect to controller") from exc
+
     async def callEnableValveWithData(self, data):
         logPrefix = '[NETSprinkler:callEnableValveWithData]'
         if self._http_client is None:
